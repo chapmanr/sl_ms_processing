@@ -5,6 +5,7 @@ import pandas as pd
 
 
 import ms_logic.gh_3d_data_reader as xdr
+import matplotlib.pyplot as plt
 
 
 class XiC3DViewer:
@@ -13,7 +14,10 @@ class XiC3DViewer:
         print("render")
         self.lower_thresh = st.sidebar.number_input("Lower Threshold", value = 2000)
         self.upper_thresh = st.sidebar.number_input("Upper Threshold", value = 40000)
-        self.mass_select = st.sidebar.number_input("Mass Selection",min_value=1, max_value=32)
+        self.mass_select = st.sidebar.number_input("Mass Selection", min_value=1, max_value=32)
+        self.layer_of_interest = st.sidebar.number_input("Show Layer", min_value=0, max_value=100)
+        self.cmap = st.sidebar.selectbox("Color Map", ["viridis", "plasma", "inferno", "magma"])
+
         self.opacity = st.sidebar.number_input("Opacity", min_value=0.05, max_value=1.0, value=0.05)
         self.select_file = st.sidebar.file_uploader("Upload 3D file" , "csv")
         self.run_button = st.sidebar.button("Run With Demo Data")
@@ -28,16 +32,42 @@ class XiC3DViewer:
         return df
 
 
+    def draw_xic(self, df:pd.DataFrame, mass_name:str):
+        print("Draw xic")
+        
+        x = [float(xs) for xs in df["x"].to_list()]
+        y = [float(ys) for ys in df["y"].to_list()]
+        t = [float(ts) for ts in df[mass_name].to_list()]
+        
+        fig, axes = plt.subplots(1, 1)
+        axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
+        st.pyplot(fig)
+
+
     def draw_from_3d_obj(self, xic3D:xdr.MSI3DXiCParser):
             st.write("Num Masses = " + str(xic3D.NumMasses()))
             mass_name = "m" + str(self.mass_select)
+
+
             if mass_name in self.xic3D.df.columns:
-                df = self.thresh(xic3D.df, mass_name)
-                st.write(mass_name + " has " + str(len(df[mass_name].to_list())) + " data points")
-                fig = px.scatter_3d(df, x='x', y='y', z='z', color = mass_name, opacity=self.opacity)
-                st.plotly_chart(fig, use_container_width=True)
+
+                col1, col2 = st.columns(2)
+                df = xic3D.df
+                #Now draw the layer of interest                
+                with col2:
+                    z_df = df[df["z"]==self.layer_of_interest]
+                    self.draw_xic(z_df,mass_name=mass_name)
+
+                with col1:
+                    df = self.thresh(xic3D.df, mass_name)
+                    st.write(mass_name + " has " + str(len(df[mass_name].to_list())) + " data points")
+                    fig = px.scatter_3d(df, x='x', y='y', z='z', color = mass_name, opacity=self.opacity)
+                    st.plotly_chart(fig, use_container_width=True)
+                
             else:
                 st.error("No mass " + mass_name + " exists")
+
+            
 
     def checks(self):
         print("checks")
