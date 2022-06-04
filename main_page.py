@@ -1,25 +1,24 @@
 import streamlit as st
 
-from  pages.sl_xyi_viewer import XiCViewer
-
-st.set_page_config(page_title="MS Explorer v 0.0.1", layout="wide")
-
-pages = {}
+st.set_page_config(page_title="MS Explorer v 0.0.2", layout="wide")
 
 def initialise():
-    pages = {
-        "XiC Viewer" : XiCViewer()
-    }
-    return pages
+    st.markdown("""
+    # Mass Spectrometry Utility Applications 
+    Includes 2, 3 and 5 dimensional data visualization and processing
+
+    **Select an MSI application from the sidebar**
+    
+    ### Streamlit Want to learn more?
+    - Check out [streamlit.io](https://streamlit.io)
+    - Jump into our [documentation](https://docs.streamlit.io)
+    - Ask a question in our [community
+        forums](https://discuss.streamlit.io)    
+""")
 
 
 def main():
-    st.sidebar.title('Navigation')
-    pages = initialise()
-    selection = st.sidebar.radio("Go to", list(pages.keys()))
-    if selection:
-        page = pages[selection]
-        page.run()
+    initialise()
 
 if __name__=="__main__":
     main()

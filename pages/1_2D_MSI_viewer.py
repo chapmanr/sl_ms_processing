@@ -13,8 +13,10 @@ class XiCViewer:
 
     def render(self):
         print("render")
+        self.cmap = st.sidebar.selectbox("Color Map", ["viridis", "plasma", "inferno", "magma"])
         self.select_file = st.sidebar.file_uploader("Upload RTE file" , "xyi")
-        self.run_button = st.sidebar.button("Run Default")
+        self.run_button = st.sidebar.button("Run With Demo Data")
+       
 
     def draw_xic(self, df:pd.DataFrame):
         print("Draw xic")
@@ -26,7 +28,7 @@ class XiCViewer:
             fig, axes = plt.subplots(1, 1)
             key_str = "m"+str(i-3) 
             t = [float(ts) for ts in df[key_str].to_list()]
-            axes.scatter(x, y, c=t, cmap='viridis', marker="s")#, s=5)
+            axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
             st.pyplot(fig)
 
     def draw_xic(self, reader : xdr.RTEParser):
@@ -45,7 +47,7 @@ class XiCViewer:
                     axes.set_axis_off()    
                     axes.get_xaxis().set_visible(False)
                     axes.get_yaxis().set_visible(False)
-                    axes.scatter(x, y, c=t, cmap='viridis', marker="s")#, s=5)
+                    axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
                     st.pyplot(fig)
 
     def checks(self):
