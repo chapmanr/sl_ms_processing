@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="MS Explorer v 0.0.2", layout="wide")
+st.set_page_config(page_title="MS Explorer v 0.0.3", layout="wide")
 
 def initialise():
     st.markdown("""
