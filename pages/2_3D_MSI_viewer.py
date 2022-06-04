@@ -15,6 +15,7 @@ class XiC3DViewer:
         self.lower_thresh = st.sidebar.number_input("Lower Threshold", value = 2000)
         self.upper_thresh = st.sidebar.number_input("Upper Threshold", value = 40000)
         self.mass_select = st.sidebar.number_input("Mass Selection", min_value=1, max_value=32)
+        self.show_all_layers = st.sidebar.checkbox("Show All layers")
         self.layer_of_interest = st.sidebar.number_input("Show Layer", min_value=0, max_value=100)
         self.cmap = st.sidebar.selectbox("Color Map", ["viridis", "plasma", "inferno", "magma"])
 
@@ -34,14 +35,31 @@ class XiC3DViewer:
 
     def draw_xic(self, df:pd.DataFrame, mass_name:str):
         print("Draw xic")
-        
-        x = [float(xs) for xs in df["x"].to_list()]
-        y = [float(ys) for ys in df["y"].to_list()]
-        t = [float(ts) for ts in df[mass_name].to_list()]
-        
-        fig, axes = plt.subplots(1, 1)
-        axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
-        st.pyplot(fig)
+
+        layers = df["z"].unique().tolist()
+        len_layers = len(layers)
+        st.write("layers = " + str(len_layers))
+        cols = 4
+        rows = round(len_layers / cols) + 1
+
+        #this should write out n rows of 4 images 
+        for row_index in range(0, rows):
+            columns = st.columns(cols)
+            for col_index in range(0, cols):                
+                calc_len = (cols * row_index) + col_index
+                if calc_len < len_layers:  
+                    with columns[col_index]:                        
+                        z_df = df[df["z"]==layers[calc_len]]
+                        x = [float(xs) for xs in z_df["x"].to_list()]
+                        y = [float(ys) for ys in z_df["y"].to_list()]
+                        t = [float(ts) for ts in z_df[mass_name].to_list()]
+                
+                        fig, axes = plt.subplots(1, 1)
+                        axes.set_axis_off()    
+                        axes.get_xaxis().set_visible(False)
+                        axes.get_yaxis().set_visible(False)
+                        axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
+                        st.pyplot(fig)
 
 
     def draw_from_3d_obj(self, xic3D:xdr.MSI3DXiCParser):
@@ -51,18 +69,23 @@ class XiC3DViewer:
 
             if mass_name in self.xic3D.df.columns:
 
-                col1, col2 = st.columns(2)
+                #col1, col2 = st.columns(2)
                 df = xic3D.df
                 #Now draw the layer of interest                
-                with col2:
+                #with col2:
+                
+                if self.show_all_layers==True:
+                    self.draw_xic(df, mass_name=mass_name)
+                else:
                     z_df = df[df["z"]==self.layer_of_interest]
-                    self.draw_xic(z_df,mass_name=mass_name)
+                    self.draw_xic(z_df, mass_name=mass_name)
 
-                with col1:
-                    df = self.thresh(xic3D.df, mass_name)
-                    st.write(mass_name + " has " + str(len(df[mass_name].to_list())) + " data points")
-                    fig = px.scatter_3d(df, x='x', y='y', z='z', color = mass_name, opacity=self.opacity)
-                    st.plotly_chart(fig, use_container_width=True)
+                #with col1:
+                self.thresh(xic3D.df, mass_name)
+                st.write(mass_name + " has " + str(len(df[mass_name].to_list())) + " data points")
+                fig = px.scatter_3d(df, x='x', y='y', z='z', color = mass_name, opacity=self.opacity)
+                st.plotly_chart(fig, use_container_width=True)
+
                 
             else:
                 st.error("No mass " + mass_name + " exists")
