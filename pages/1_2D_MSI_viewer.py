@@ -16,7 +16,6 @@ class XiCViewer:
         self.cmap = st.sidebar.selectbox("Color Map", ["viridis", "plasma", "inferno", "magma"])
         self.select_file = st.sidebar.file_uploader("Upload RTE file" , "xyi")
         self.run_button = st.sidebar.button("Run With Demo Data")
-       
 
     def draw_xic(self, df:pd.DataFrame):
         print("Draw xic")
@@ -47,7 +46,7 @@ class XiCViewer:
                     axes.set_axis_off()    
                     axes.get_xaxis().set_visible(False)
                     axes.get_yaxis().set_visible(False)
-                    axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)
+                    axes.scatter(x, y, c=t, cmap=self.cmap, marker="s")#, s=5)                    
                     st.pyplot(fig)
 
     def checks(self):
